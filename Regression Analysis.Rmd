@@ -1,0 +1,292 @@
+---
+title: "Regression Analysis"
+author: "Your Name Here"
+subtitle: Produced For The Such and Such PRP
+classoption: onecolumn
+documentclass: article
+fontsize: 11pt
+urlcolor: blue
+output: pdf_document
+---
+
+# Setup & Package Loading
+
+When you begin your analysis, you'll need to load your packages in the `r` `setup` code chunk. Also, if you want your documents to knit faster, you'll need to set the cache=TRUE. 
+
+```{r setup, include=FALSE, fig.showtext=TRUE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, message=FALSE, warning=FALSE)
+library(GGally)
+library(tidyverse)
+library(prettydoc)
+library(showtext)
+library(ggthemes)
+library(ggsci)
+```
+# Import The Data
+
+When we begin this analysis, we'll need to import our data using the `readr` package, which is one of many that packages bundled in the `tidyverse` package.
+
+```{r import data, include=FALSE}
+training <- read_csv("data/training.csv") %>% # Import Data using `readr` package
+  as.data.frame(training) # Convert to data frame for visualization
+
+test <- read_csv("data/test.csv") %>% # Import Data using `readr` package
+  as.data.frame(training) # Convert to data frame for visualization
+```
+
+# Visual Analysis of Simple Linear Regression 
+
+This first of our code runs through each variable to see which are closely related to the production of 211 calls from our American Community Survey Data. 
+
+As you can imagine, some variables like `popul` (*total population*) & `bachelors` (*those persons over 25 having at least a bachelor's degree*) have little to relationship with the occurence of 211 calls. That said, others that indicate tight confidence intervals with very closely knitted residuals warrant further investigation.
+
+```{r residuals, include=FALSE}
+
+# add a 'fake' column
+training$Residual <- seq_len(nrow(training))
+
+# calculate all residuals prior to display
+residuals <- lapply(training[3:14], function(x) {
+  summary(lm(calls ~ x, data = training))$residuals
+})
+# calculate a consistent y range for all residuals
+y_range <- range(unlist(residuals))
+
+# custom function to display continuous data. If the y variable is "Residual", do custom work.
+lm_or_resid <- function(data, mapping, ..., line_color = "red", line_size = 1) {
+  if (as.character(mapping$y) != "Residual") {
+    return(ggally_smooth_lm(data, mapping, ...))
+  }
+
+  # make residual data to display
+  resid_data <- data.frame(
+    x = data[[as.character(mapping$x)]],
+    y = residuals[[as.character(mapping$x)]]
+  )
+
+  #set ggplot2 base for ggduo plot
+  ggplot(data = data, mapping = mapping) +
+    geom_hline(yintercept = 0, color = line_color, size = line_size) +
+    ylim(y_range) +
+    geom_point(data = resid_data, mapping = aes(x = x, y = y), ...)
+
+}
+```
+
+# Data Visualization
+
+## Black & White Themed Visualization 
+
+```{r, echo=FALSE}
+# plot the data
+ggduo(
+  training, # Calls on dataset
+  3:6, c(1,15), # This identifies dependent vars to regress on independent vars
+  types = list(continuous = lm_or_resid)) + 
+  theme_bw() + # This sets your theme.
+  labs(title="Linear Regressions & Residuals on 211 Calls", # Initiates labels & defines title
+       subtitle="By: [Insert Name] @ The LBJ School", # Defines subtitle
+       caption = "\nData From : 211 Call Database 2016 & ACS 2013 5-Year Summary") + # Defines caption
+  theme(plot.title=element_text(size=16, face="bold")) # Custom theme elements that alters title formatting
+```
+
+### Answer 
+
+Dillon Ipsum Julie Taylor, will you marry me? Clear Eyes. Full Hearts. Saracen, quarterback's a captain. CHAMPIONS DON'T COMPLAIN! Why don't you take your Members Only jacket off and hang it on the coat rack? Blood, sweat and tears - it all stays right here on this field, right now! This is our dirt! This is our mud! This is ours, baby! Everybody leaves me! What's wrong with me? No matter what happens, no matter where you go, no matter what you do, I'm gonna be right behind you. Always and always and always. There's a lot of dude talking going on out here. It's time for you to let Tim Riggins come home. You're gonna be the star quarterback of the DIllon Panthers next year. And you are gonna shine.
+
+## Tufte Themed Visualization 
+
+```{r, echo=FALSE}
+# plot the data
+ggduo(
+  training,
+  7:10, c(1,15),
+  types = list(continuous = lm_or_resid)) + 
+  theme_tufte() + 
+  labs(title="Linear Regressions & Residuals on 211 Calls", 
+       subtitle="By: [Insert Name] @ The LBJ School", 
+       caption = "\nData From : 211 Call Database 2016 & ACS 2013 5-Year Summary") 
+```
+
+### Answer 
+
+Dillon Ipsum Julie Taylor, will you marry me? Clear Eyes. Full Hearts. Saracen, quarterback's a captain. CHAMPIONS DON'T COMPLAIN! Why don't you take your Members Only jacket off and hang it on the coat rack? Blood, sweat and tears - it all stays right here on this field, right now! This is our dirt! This is our mud! This is ours, baby! Everybody leaves me! What's wrong with me? No matter what happens, no matter where you go, no matter what you do, I'm gonna be right behind you. Always and always and always. There's a lot of dude talking going on out here. It's time for you to let Tim Riggins come home. You're gonna be the star quarterback of the DIllon Panthers next year. And you are gonna shine.
+
+## FiveThirtyEight Themed Visualization 
+
+```{r, echo=FALSE}
+# plot the data
+ggduo(
+  training,
+  11:14, c(1,15),
+  types = list(continuous = lm_or_resid)) + 
+  theme_fivethirtyeight() + 
+  labs(title="Linear Regressions & Residuals on 211 Calls", 
+       subtitle="By: [Insert Name] @ The LBJ School", 
+       caption = "\nData From : 211 Call Database 2016 & ACS 2013 5-Year Summary") 
+```
+
+### Answer 
+
+Dillon Ipsum Julie Taylor, will you marry me? Clear Eyes. Full Hearts. Saracen, quarterback's a captain. CHAMPIONS DON'T COMPLAIN! Why don't you take your Members Only jacket off and hang it on the coat rack? Blood, sweat and tears - it all stays right here on this field, right now! This is our dirt! This is our mud! This is ours, baby! Everybody leaves me! What's wrong with me? No matter what happens, no matter where you go, no matter what you do, I'm gonna be right behind you. Always and always and always. There's a lot of dude talking going on out here. It's time for you to let Tim Riggins come home. You're gonna be the star quarterback of the DIllon Panthers next year. And you are gonna shine.
+
+## Economist Themed Visualization 
+
+```{r education health poverty, echo=FALSE, fig.showtext=TRUE, message=FALSE, warning=FALSE}
+# plot the data
+showtext_auto()
+ggduo(
+  training,
+  c(6,11,13), c(1,15),
+  types = list(continuous = lm_or_resid)) + 
+  theme_economist() + 
+  labs(title="Linear Regressions & Residuals on 211 Calls", 
+       subtitle="By: [Insert Name] @ The LBJ School", 
+       caption = "\nData From : 211 Call Database 2016 & ACS 2013 5-Year Summary") 
+```
+
+### Answer 
+
+Dillon Ipsum Julie Taylor, will you marry me? Clear Eyes. Full Hearts. Saracen, quarterback's a captain. CHAMPIONS DON'T COMPLAIN! Why don't you take your Members Only jacket off and hang it on the coat rack? Blood, sweat and tears - it all stays right here on this field, right now! This is our dirt! This is our mud! This is ours, baby! Everybody leaves me! What's wrong with me? No matter what happens, no matter where you go, no matter what you do, I'm gonna be right behind you. Always and always and always. There's a lot of dude talking going on out here. It's time for you to let Tim Riggins come home. You're gonna be the star quarterback of the DIllon Panthers next year. And you are gonna shine.
+
+\newpage
+
+# Simple & Multiple Linear Regression Analysis of Variables
+
+This first section tried to do a quick visual run through to identify variables that warrant further investigation. After looking at our visuals, we follow up below with the individual & synergistic impacts of the following variables:
+
+  * `fampov`: Families whose incomes is below the poverty level
+  * `lessthanHS`: Those persons over 25 with less than a high school education
+  * `nohealth`: Those person without health insurance
+
+The outputs are as follows
+
+##Simple LR on Calls~FamPov
+
+```{r Simple LR on Calls~FamPov}
+lm.fit=lm(calls ~ fampov,data=training)
+summary(lm.fit)
+```
+
+##Simple LR on Calls~LessThanHS
+```{r Simple LR on Calls~LessThanHS}
+lm.fit=lm(calls ~ lessthanHS,data=training)
+summary(lm.fit)
+```
+
+##Simple LR on Calls~NoHealth
+```{r Simple LR on Calls~NoHealth, echo=FALSE}
+lm.fit=lm(calls ~ nohealth,data=training)
+summary(lm.fit)
+```
+
+##Multiple LR on Calls~FamPov x LessThanHS x NoHealth
+```{r Multiple LR on Calls~FamPov*LessThanHS*NoHealth, echo=FALSE}
+lm.fit=lm(calls ~ fampov*lessthanHS*nohealth,data=training)
+summary(lm.fit)
+```
+
+##Multiple LR on Calls~FamPov x LessThanHS
+```{r Multiple LR on Calls~FamPov*LessThanHS, echo=FALSE}
+lm.fit=lm(calls ~ fampov*lessthanHS,data=training)
+summary(lm.fit)
+```
+
+```{r Multiple LR on Calls~FamPov*LessThanHS Graph, echo=FALSE}
+p2 <- ggplot(training, aes(calls, fampov*lessthanHS, colour = calls)) + 
+  theme_tufte() + 
+  geom_point() +
+  geom_smooth(method=lm) + 
+  labs(title="Linear Regressions & Residuals on 211 Calls", 
+       subtitle="By: [Insert Name] @ The LBJ School", 
+       caption = "\nData From : 211 Call Database 2016 & American Community Survey 2013 5-Year Summary") 
+p2
+```
+
+\newpage
+
+# Basics of Markdown (Header 1)
+
+##  Header Styles (Header 2)
+
+Markdown is 
+
+* _easy_ to use
+
+* __simple__ 
+
+* fun?
+
+### Header 3 
+
+#### Header 4 
+
+##### Header 5 
+
+###### Header 6
+
+## Text Formatting
+
+_italics_ 
+
+__bold__ 
+
+`code`
+
+## Lists
+
+```
+Bulleted List
+
+* bullet 1 
+
+* bullet 2
+
+Numbered list
+
+1. item 1
+
+2. item 2
+```
+
+Bulleted List
+
+* bullet 1 
+
+* bullet 2
+
+Numbered list
+
+1. item 1
+
+2. item 2
+
+## Links
+
+```
+This is a [link](www.git.com).
+```
+This is a [link](www.git.com).
+
+
+## Equations
+
+Write equations with latex math commands and surround them in $’s.
+
+According to Einstein, `$E=mc^{2}$` or $E=mc^{2}$ 
+
+## Equation Blocks
+
+According to Einstein,
+
+`$$E=mc^{2}$$` results in a centered equation on its own line.
+
+$$E=mc^{2}$$
+
+## Images
+
+Images can be inserted by writing:
+
+`![Image Caption](images/lbj.png)`, which results in Figure 1:
+
+![Image Caption](images/lbj.png)
